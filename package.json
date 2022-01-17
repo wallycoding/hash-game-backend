@@ -1,0 +1,36 @@
+{
+  "name": "hash-game-backend",
+  "version": "1.0.0",
+  "description": "Brincando com socket.io",
+  "main": "src",
+  "scripts": {
+    "start": "tsnd --respawn --transpile-only ./src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wallycoding/hash-game-backend.git"
+  },
+  "keywords": [
+    "typescript",
+    "express",
+    "socket.io",
+    "nodej.js"
+  ],
+  "author": "[wallycoding]",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wallycoding/hash-game-backend/issues"
+  },
+  "homepage": "https://github.com/wallycoding/hash-game-backend#readme",
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^11.0.0",
+    "express": "^4.17.2",
+    "socket.io": "^4.4.1"
+  }
+}
