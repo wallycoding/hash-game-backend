@@ -1,0 +1,12 @@
+- CONECTAR (x)
+
+  - CRIAR SALA (x)
+    - ENTRAR SALA (x)
+    - SAIR SALA (x)
+    - GAME
+      - MOVER
+      - RENICAR/JOGAR NOVAMENTE
+      - DESISTIR
+
+- DESCONECTAR (x)
+  - LIMPA TUDO

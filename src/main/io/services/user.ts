@@ -6,7 +6,12 @@ export type TypeUser = {
   id: string;
   roomConnection: null | ((callback: (room: TypeRoom) => any) => any);
   onExit: () => void;
-  disconnect(): void;
+  socket: SocketIo;
+  reply: {
+    done: (event: string, data?: any) => void;
+    room: (event: string, id: string, data?: any) => void;
+    error: (event: string, error: any) => void;
+  };
 };
 
 export const createUser = (socket: SocketIo) => {
@@ -21,9 +26,18 @@ export const createUser = (socket: SocketIo) => {
     set onExit(callback: () => void) {
       eventEmitter.addListener("exit", callback);
     },
-    disconnect() {
-      this.onExit();
+    reply: {
+      done(event: string, data?: any) {
+        socket.emit(`${event}-response`, null, data);
+      },
+      room(event: string, id: string, data?: any) {
+        socket.emit(`${event}-${id}`, data);
+      },
+      error(event: string, error: any) {
+        socket.emit(`${event}-response`, error);
+      },
     },
+    socket: socket,
   };
 
   return user;
