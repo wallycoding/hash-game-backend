@@ -5,7 +5,7 @@ const ioController = (io: Server) => {
 
     io.on("connection", (socket) => {
         console.log("USER CONNECTED:", socket.id);
-        routes(socket);
+        routes(socket, io);
     });
 
 }

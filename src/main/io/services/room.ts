@@ -1,22 +1,29 @@
+import type { Server } from "socket.io";
 import { randomBytes } from "crypto";
-import { EventEmitter } from "events";
-// import type { SocketIo } from "../types";
 import { TypeUser } from "./user";
 import { EVENT_NAMES } from "../events";
+import { verifyPositions } from "./game";
 
-type TypePlayer = "one" | "two";
-type TypePlayerID = string | null;
+export type TypeStatusGame = "off" | "game" | "end";
+export type TypePlayer = "one" | "two";
+export type TypePlayerID = string | null;
 
 export type TypeRoom = {
   id: string;
   playerOne: TypePlayerID;
   playerTwo: TypePlayerID;
   getPlayerId: (player: TypePlayer) => TypePlayerID;
+  emitRoom: () => void;
   game: {
-    status: "off" | "game" | "end";
+    win: null | "one" | "two";
+    status: TypeStatusGame;
     tablePositions: TypePlayer[];
     initPlayer: TypePlayer;
     currentPlayer: TypePlayer;
+    setGameState: (status: TypeStatusGame, condition: boolean) => void;
+    alternatePlayer: () => void;
+    checkPositions: () => void;
+    setPosition: (user: TypeUser, position: number) => void;
   };
   leave: (user: TypeUser) => void;
   join: (user: TypeUser) => void;
@@ -24,7 +31,7 @@ export type TypeRoom = {
 
 const rooms: Map<string, TypeRoom> = new Map();
 
-export const createRoom = (user: TypeUser) => () => {
+export const createRoom = (user: TypeUser, io: Server) => () => {
   if (user.roomConnection)
     return user.reply.error(EVENT_NAMES.CREATE_ROOM, "already have a room");
 
@@ -55,41 +62,70 @@ export const createRoom = (user: TypeUser) => () => {
       return player === "one" ? room.playerOne : room.playerTwo;
     },
     game: {
+      win: null,
       status: "off",
-      tablePositions: [],
+      tablePositions: new Array(9),
       initPlayer: "one",
       currentPlayer: "one",
+      setGameState(status, condition) {
+        if (condition) room.game.status = status;
+      },
+      alternatePlayer() {
+        room.game.currentPlayer === "one"
+          ? (room.game.currentPlayer = "two")
+          : (room.game.currentPlayer = "one");
+      },
+      checkPositions() {
+        const { tablePositions } = room.game;
+        const { hasWin } = verifyPositions(tablePositions);
+        console.log("Alguém VENCEU ?", hasWin);
+        // TODO VERIFICAR SE DEU EMPATE
+      },
+      setPosition(user, position) {
+        const currentPlayerID = room.getPlayerId(room.game.currentPlayer);
+        if (
+          currentPlayerID !== user.id ||
+          room.game.status !== "game" ||
+          position < 0 ||
+          position > 8 ||
+          room.game.tablePositions[position]
+        )
+          return;
+
+        room.game.tablePositions[position] = room.game.currentPlayer;
+        room.game.alternatePlayer();
+        room.game.checkPositions();
+        room.emitRoom();
+      },
+    },
+    emitRoom() {
+      if (room.playerOne) {
+        io.to(room.playerOne).emit(EVENT_NAMES.UPDATE_ROOM, room);
+      }
+      if (room.playerTwo)
+        io.to(room.playerTwo).emit(EVENT_NAMES.UPDATE_ROOM, room);
     },
     leave(user) {
-      const removePlayerOne = () => {
-        room.playerOne = null;
-        user.roomConnection = null;
-        user.socket.leave(room.id);
-      };
-      const removePlayerTwo = () => {
-        room.playerTwo = null;
-        user.roomConnection = null;
-        user.socket.leave(room.id);
-      };
-      room.playerOne === user.id ? removePlayerOne() : removePlayerTwo();
+      user.roomConnection = null;
+      room.playerOne === user.id
+        ? (room.playerOne = null)
+        : (room.playerTwo = null);
+      room.game.setGameState("end", room.game.status === "game");
+      room.emitRoom();
     },
     join(user) {
-      const addPlayerOne = () => {
-        room.playerOne = user.id;
-        user.roomConnection = (callback) => callback(room);
-        user.socket.join(room.id);
-      };
-      const addPlayerTwo = () => {
-        room.playerTwo = user.id;
-        user.roomConnection = (callback) => callback(room);
-        user.socket.join(room.id);
-      };
-      room.playerOne === user.id ? addPlayerOne() : addPlayerTwo();
-      user.reply.done(EVENT_NAMES.JOIN_ROOM, room);
+      user.roomConnection = (callback) => callback(room);
+      room.playerOne === user.id
+        ? (room.playerOne = user.id)
+        : (room.playerTwo = user.id);
+      room.game.setGameState(
+        "game",
+        !!((room.playerOne || room.playerTwo) && room.game.status === "off")
+      );
+      room.emitRoom();
     },
   };
   rooms.set(room.id, room);
-  user.socket.join(room.id);
   user.roomConnection = (callback) => callback(room);
   user.reply.done(EVENT_NAMES.CREATE_ROOM, room);
   console.log("ROOM ID:", room.id);
@@ -107,6 +143,14 @@ export const leaveRoom = (user: TypeUser) => () => {
     return user.reply.error(EVENT_NAMES.LEAVE_ROOM, "you're not in a room");
   user.roomConnection((room) => {
     room.leave(user);
+  });
+};
+
+export const gameSetPosition = (user: TypeUser) => (position: number) => {
+  if (!user.roomConnection)
+    return user.reply.error(EVENT_NAMES.LEAVE_ROOM, "you're not in a room");
+  user.roomConnection((room) => {
+    room.game.setPosition(user, position);
   });
 };
 
