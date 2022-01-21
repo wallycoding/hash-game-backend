@@ -4,7 +4,9 @@
   "description": "Brincando com socket.io",
   "main": "src",
   "scripts": {
-    "dev": "tsnd --respawn --transpile-only ./src"
+    "start": "node ./dist",
+    "dev": "tsnd --respawn --transpile-only ./src",
+    "build": "tsc "
   },
   "repository": {
     "type": "git",

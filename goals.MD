@@ -1,12 +1,11 @@
-- CONECTAR (x)
-
-  - CRIAR SALA (x)
-    - ENTRAR SALA (x)
-    - SAIR SALA (x)
+# Project Goals
+- Connect (x)
+  - Create Room (x)
+    - Join Room (x)
+    - LeaveRoom (x)
     - GAME (X)
-      - MOVER (X)
-      - RENICAR/JOGAR NOVAMENTE (X)
-      - DESISTIR (X)
-
-- DESCONECTAR (x)
-  - LIMPA TUDO (X)
+      - Set Positions (X)
+      - Reset Game (X)
+      - Leave Game (X)
+- Disconnect (x)
+  - Clear Data (X)
