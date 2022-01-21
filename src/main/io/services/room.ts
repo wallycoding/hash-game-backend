@@ -15,11 +15,11 @@ export type TypeRoom = {
   getPlayerId: (player: TypePlayer) => TypePlayerID;
   emitRoom: () => void;
   game: {
-    win: null | "one" | "two";
+    win: null | "one" | "two" | "no-winner";
     status: TypeStatusGame;
     tablePositions: TypePlayer[];
-    initPlayer: TypePlayer;
     currentPlayer: TypePlayer;
+    resetGame: (currentPlayer: TypePlayer) => void;
     setGameState: (status: TypeStatusGame, condition: boolean) => void;
     alternatePlayer: () => void;
     checkPositions: () => void;
@@ -64,9 +64,15 @@ export const createRoom = (user: TypeUser, io: Server) => () => {
     game: {
       win: null,
       status: "off",
-      tablePositions: new Array(9),
-      initPlayer: "one",
+      tablePositions: new Array(9).fill(null),
       currentPlayer: "one",
+      resetGame(currentPlayer = "one") {
+        room.game.win = null;
+        room.game.status = room.playerOne && room.playerTwo ? "game" : "off";
+        room.game.tablePositions = Array(9).fill(null);
+        room.game.currentPlayer = currentPlayer;
+        room.emitRoom();
+      },
       setGameState(status, condition) {
         if (condition) room.game.status = status;
       },
@@ -77,9 +83,16 @@ export const createRoom = (user: TypeUser, io: Server) => () => {
       },
       checkPositions() {
         const { tablePositions } = room.game;
-        const { hasWin } = verifyPositions(tablePositions);
-        console.log("Alguém VENCEU ?", hasWin);
-        // TODO VERIFICAR SE DEU EMPATE
+        const { hasWin, plays } = verifyPositions(tablePositions);
+        if (hasWin) {
+          room.game.win = hasWin;
+          room.game.status = "end";
+        } else {
+          if (!plays) {
+            room.game.win = "no-winner";
+            room.game.status = "end";
+          }
+        }
       },
       setPosition(user, position) {
         const currentPlayerID = room.getPlayerId(room.game.currentPlayer);
@@ -114,6 +127,8 @@ export const createRoom = (user: TypeUser, io: Server) => () => {
       room.emitRoom();
     },
     join(user) {
+      if (room.playerOne && room.playerTwo)
+        user.reply.error(EVENT_NAMES.JOIN_ROOM, "full room");
       user.roomConnection = (callback) => callback(room);
       room.playerOne === user.id
         ? (room.playerOne = user.id)
@@ -128,7 +143,6 @@ export const createRoom = (user: TypeUser, io: Server) => () => {
   rooms.set(room.id, room);
   user.roomConnection = (callback) => callback(room);
   user.reply.done(EVENT_NAMES.CREATE_ROOM, room);
-  console.log("ROOM ID:", room.id);
 };
 
 export const joinRoom = (user: TypeUser) => (id: string) => {
@@ -154,11 +168,21 @@ export const gameSetPosition = (user: TypeUser) => (position: number) => {
   });
 };
 
+export const gameReset = (user: TypeUser) => () => {
+  if (!user.roomConnection)
+    return user.reply.error(EVENT_NAMES.LEAVE_ROOM, "you're not in a room");
+  user.roomConnection((room) => {
+    if (room.game.status !== "end") return;
+    if (room.game.win === "one" || room.game.win === "two")
+      room.game.resetGame(room.game.win);
+    if (room.game.win === "no-winner")
+      room.game.resetGame(room.game.currentPlayer === "one" ? "two" : "one");
+  });
+};
+
 export const disconnectRoom = (user: TypeUser) => {
   if (user.roomConnection)
     user.roomConnection((room) => {
       room.leave(user);
     });
 };
-
-export const allRooms = () => () => console.log(rooms.values());

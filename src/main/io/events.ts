@@ -2,20 +2,21 @@ import type { Server } from "socket.io";
 import { SocketIo } from "./types";
 import { createUser } from "./services/user";
 import {
-  allRooms,
   createRoom,
   joinRoom,
   leaveRoom,
   disconnectRoom,
   gameSetPosition,
+  gameReset,
 } from "./services/room";
 
 export enum EVENT_NAMES {
-  CREATE_ROOM = "create-room", // (event)
-  JOIN_ROOM = "join-room", // (event, room-id: string)
-  LEAVE_ROOM = "leave-room", // (event)
-  GAME_SET_POSITION = "game-set-position", // (event, position: number(0, 8))
-  UPDATE_ROOM = "update-room"
+  CREATE_ROOM = "create-room", // EMIT > (event) | LISTEN (event, room);
+  JOIN_ROOM = "join-room", // EMIT > (event, room-id);
+  LEAVE_ROOM = "leave-room", // EMIT > (event);
+  GAME_SET_POSITION = "game-set-position", // EMIT > (event, position: number<0, 8>);
+  GAME_RESET = "game-reset", // EMIT > (event);
+  UPDATE_ROOM = "update-room" // LISTEN (event, room);
 }
 
 const socketIoEvents = (socket: SocketIo, io: Server) => {
@@ -27,12 +28,12 @@ const socketIoEvents = (socket: SocketIo, io: Server) => {
 
   // GAME
   socket.on(EVENT_NAMES.GAME_SET_POSITION, gameSetPosition(user));
+  socket.on(EVENT_NAMES.GAME_RESET, gameReset(user));
 
   socket.once("disconnect", () => {
     console.log(`USER DISCONNECTED: ${socket.id}`);
     disconnectRoom(user);
   });
-  socket.on("all-rooms", allRooms());
 };
 
 export default socketIoEvents;

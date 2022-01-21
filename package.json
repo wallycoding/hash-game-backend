@@ -1,5 +1,5 @@
 {
-  "name": "hash-game-backend",
+  "name": "hash-game",
   "version": "1.0.0",
   "description": "Brincando com socket.io",
   "main": "src",

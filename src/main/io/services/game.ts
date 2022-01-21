@@ -40,14 +40,13 @@ export const verifyPositions = (positions: TypePositions) => {
     return null;
   };
 
-  console.log("HORIZONTAL:", verifyHorizontal());
-  console.log("VERTICAL:", verifyVertical());
-  console.log("DIAGONAL", verifyDiagonal());
-
   const verification = {
     horizontal: verifyHorizontal(),
     vertical: verifyVertical(),
     diagonal: verifyDiagonal(),
+    get plays() {
+      return positions.filter(item => !item).length
+    },
     get hasWin() {
       return (
         verification.horizontal ||
