@@ -177,7 +177,7 @@ export const gameReset = (user: TypeUser) => () => {
     if (room.game.win === "one" || room.game.win === "two")
       room.game.resetGame(room.game.win);
     if (room.game.win === "no-winner")
-      room.game.resetGame(room.game.currentPlayer === "one" ? "two" : "one");
+      room.game.resetGame(room.game.currentPlayer);
   });
 };
 
