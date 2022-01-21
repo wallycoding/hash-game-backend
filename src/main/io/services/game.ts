@@ -45,7 +45,7 @@ export const verifyPositions = (positions: TypePositions) => {
     vertical: verifyVertical(),
     diagonal: verifyDiagonal(),
     get plays() {
-      return positions.filter(item => !item).length
+      return positions.filter((item) => !item).length;
     },
     get hasWin() {
       return (

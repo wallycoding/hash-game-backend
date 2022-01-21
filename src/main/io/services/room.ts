@@ -1,7 +1,7 @@
 import type { Server } from "socket.io";
 import { randomBytes } from "crypto";
 import { TypeUser } from "./user";
-import { EVENT_NAMES } from "../events";
+import { EVENT_NAMES } from "../";
 import { verifyPositions } from "./game";
 
 export type TypeStatusGame = "off" | "game" | "end";
@@ -35,6 +35,9 @@ export const createRoom = (user: TypeUser, io: Server) => () => {
   if (user.roomConnection)
     return user.reply.error(EVENT_NAMES.CREATE_ROOM, "already have a room");
 
+  const createId = () =>
+    randomBytes(6).toString("hex").slice(0, 6).toUpperCase();
+
   const hasPlayers = (room: TypeRoom) => {
     const deleteRoom = !room.playerOne || !room.playerTwo;
     if (deleteRoom) rooms.delete(room.id);
@@ -43,7 +46,7 @@ export const createRoom = (user: TypeUser, io: Server) => () => {
   let playerOne: TypePlayerID = user.id;
   let playerTwo: TypePlayerID = null;
   const room: TypeRoom = {
-    id: randomBytes(6).toString("hex").slice(0, 6).toUpperCase(), // ID 6 chars
+    id: createId(), // ID 6 chars
     get playerOne() {
       return playerOne;
     },
