@@ -131,9 +131,7 @@ export const createRoom = (user: TypeUser, io: Server) => () => {
       if (room.playerOne && room.playerTwo)
         user.reply.error(EVENT_NAMES.JOIN_ROOM, "full room");
       user.roomConnection = (callback) => callback(room);
-      room.playerOne === user.id
-        ? (room.playerOne = user.id)
-        : (room.playerTwo = user.id);
+      !room.playerOne ? (room.playerOne = user.id) : (room.playerTwo = user.id);
       room.game.setGameState(
         "game",
         !!((room.playerOne || room.playerTwo) && room.game.status === "off")
