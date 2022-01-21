@@ -30,7 +30,7 @@ export const verifyPositions = (positions: TypePositions) => {
   };
 
   const verifyDiagonal = () => {
-    const topToBottom = [positions[0], positions[4], positions[9]];
+    const topToBottom = [positions[0], positions[4], positions[8]];
     const bottomToTop = [positions[2], positions[4], positions[6]];
     const axes = [topToBottom, bottomToTop];
     for (const orderedPositions of axes) {
