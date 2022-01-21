@@ -24,40 +24,56 @@ yarn `yarn`
  - room events
    - update-room 
      > send all room updates
+
      > **`<room-updated>`**: is a object room
+
      > **actions**:
+     
      - **response** `client.on("update-room", (<room-updated>) => {...})` 
    - create-room
      > create a room for players.
+
      > **`<room>`**: is a object room
+     
      > **actions**:
+     
      - **emit** `client.emit("create-room");`
      - **response** `client.on("create-room-response", (<room>) => {...})`
 
    - join-room
      > join in the room
+
      > **`<room-id>`**: the id of the room to be able to enter
+     
      > **actions**:
+     
      - **emit** `client.emit("join-room", <room-id>);`
      - **response** **`to update-room`**
 
    - leave-room
      > leave the room
+
      > **actions**:
+     
      - **emit** `client.emit("leave-room");`
      - **response** **`to update-room`**
 
    - game events
      - game-set-position
        > the game has an array with 9 positions, each position marks a move
+
        > **`<position>`**: is a number 0 to 8
+       
        > **actions**:
+       
        - **emit** `client.emit("game-set-position", <position>)`
        - **response** **`to update-room`**
       
      - game-reset
        > the game is reset to start if the game status has ended 
+       
        > **actions**:
+       
        - **emit** `client.emit("game-reset")`
        - **response** **`to update-room`**
  - disconnect **(default)**
