@@ -6,11 +6,11 @@ import { Server } from "socket.io";
 
 import socketIoEvents from "./main/io";
 const app = express();
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: process.env.ORIGIN_ACCEPTED }));
 const server = new http.Server(app);
 const socketIO = new Server(server, {
   cors: {
-    origin: "*",
+    origin: process.env.ORIGIN_ACCEPTED,
   },
 });
 
