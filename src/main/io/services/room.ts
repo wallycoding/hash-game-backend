@@ -120,11 +120,11 @@ export const createRoom = (user: TypeUser, io: Server) => () => {
     },
     leave(user) {
       user.roomConnection = null;
+      room.game.setGameState("end", room.game.status === "game");
+      room.game.win = room.getPlayerId("one") === user.id ? "two" : "one";
       room.playerOne === user.id
         ? (room.playerOne = null)
         : (room.playerTwo = null);
-      room.game.setGameState("end", room.game.status === "game");
-      room.game.win = room.getPlayerId("one") === user.id ? "two" : "one";
       room.emitRoom();
     },
     join(user) {

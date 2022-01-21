@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./dist",
     "dev": "tsnd --respawn --transpile-only ./src",
-    "build": "tsc "
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
